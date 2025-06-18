@@ -1,0 +1,193 @@
+<CompuCell3D Revision="2" Version="4.6.0">
+    <Metadata>
+        <NumberOfProcessors>12</NumberOfProcessors>
+        <DebugOutputFrequency>10</DebugOutputFrequency>
+    </Metadata>
+
+    <Potts>
+        <!-- Define the dimensions of the simulation grid -->
+        <!-- Adjusted for scaling: 1 lattice unit = 0.4 mm -->
+        <Dimensions x="150" y="300" z="200"/>
+        <Steps>10000</Steps>
+        <Temperature>1.0</Temperature>
+        <!-- Global fluctuation amplitude (temperature) -->
+      <FluctuationAmplitude>2</FluctuationAmplitude>
+
+      <!-- Function to combine source and target cell fluctuation amplitudes -->
+      <FluctuationAmplitudeFunctionName>ArithmeticAverage</FluctuationAmplitudeFunctionName>
+        <Boundary_x>NoFlux</Boundary_x>
+        <Boundary_y>NoFlux</Boundary_y>
+        <Boundary_z>NoFlux</Boundary_z>
+    </Potts>
+
+    <Plugin Name="CellType">
+    <CellType TypeId="0" TypeName="Medium"/>
+    <CellType TypeId="1" TypeName="EpithelioidTumor" />
+    <CellType TypeId="2" TypeName="SarcomatoidTumor" />
+    <CellType TypeId="3" TypeName="VisceralPleura" />
+    <CellType TypeId="4" TypeName="ParietalPleura"/>
+    <CellType TypeId="5" TypeName="M2Macrophage"/>
+    <CellType TypeId="6" TypeName="CAF"/>
+    <CellType TypeId="7" TypeName="Fibroblast"/>
+    <CellType TypeId="8" TypeName="Bone" Freeze=''/>
+</Plugin>
+
+<Plugin Name="Volume">
+</Plugin>
+
+
+    <Plugin Name="Surface">
+
+    </Plugin>
+
+    <Plugin Name="Contact">
+        <!-- Adhesion energies between cell types -->
+        <!-- Tumor cells -->
+        <Energy Type1="EpithelioidTumor" Type2="EpithelioidTumor">2.5</Energy>
+        <Energy Type1="SarcomatoidTumor" Type2="SarcomatoidTumor">15.0</Energy>
+        <Energy Type1="EpithelioidTumor" Type2="SarcomatoidTumor">10.0</Energy>
+        <Energy Type1="M2Macrophage" Type2="M2Macrophage">10.0</Energy>
+        <Energy Type1="CAF" Type2="CAF">10.0</Energy>
+        <Energy Type1="EpithelioidTumor" Type2="M2Macrophage">5.0</Energy>
+        <Energy Type1="EpithelioidTumor" Type2="CAF">5.0</Energy>
+        <Energy Type1="SarcomatoidTumor" Type2="M2Macrophage">2.0</Energy>
+        <Energy Type1="SarcomatoidTumor" Type2="CAF">2.0</Energy>
+        <!-- Tumor with medium high to discourage leaving space -->
+        <Energy Type1="Medium" Type2="EpithelioidTumor">1.0</Energy>
+        <Energy Type1="Medium" Type2="SarcomatoidTumor">8.0</Energy>
+        <Energy Type1="Medium" Type2="M2Macrophage">50.0</Energy>
+        <Energy Type1="Medium" Type2="CAF">50.0</Energy>
+        <Energy Type1="Medium" Type2="VisceralPleura">20</Energy>
+        <Energy Type1="Medium" Type2="ParietalPleura">20</Energy>
+        <Energy Type1="Medium" Type2="Medium">-20</Energy>
+        <Energy Type1="VisceralPleura" Type2="VisceralPleura">-30.0</Energy>
+        <Energy Type1="VisceralPleura" Type2="ParietalPleura">50.0</Energy>
+        <Energy Type1="ParietalPleura" Type2="ParietalPleura">-30.0</Energy>
+        <Energy Type1="EpithelioidTumor" Type2="VisceralPleura">8.0</Energy>
+        <Energy Type1="EpithelioidTumor" Type2="ParietalPleura">8.0</Energy>
+        <Energy Type1="SarcomatoidTumor" Type2="VisceralPleura">5.0</Energy>
+        <Energy Type1="SarcomatoidTumor" Type2="ParietalPleura">5.0</Energy>
+        <NeighborOrder>3</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="CenterOfMass"/>
+    <Plugin Name="NeighborTracker"/>
+
+
+    <Plugin Name="Chemotaxis">
+        <ChemicalField Name="IL6"/>
+        <ChemicalField Name="IL8"/>
+        <ChemicalField Name="TGFbeta"/>
+    </Plugin>
+
+    <Steppable Type="DiffusionSolverFE">
+        <DiffusionField Name="IL6" DiffusionConstant="0.1" DecayConstant="0.0">
+            <InitialCondition Type="Medium">0.0</InitialCondition>
+        </DiffusionField>
+        <DiffusionField Name="IL8" DiffusionConstant="0.1" DecayConstant="0.0">
+            <InitialCondition Type="Medium">0.0</InitialCondition>
+        </DiffusionField>
+        <DiffusionField Name="TGFbeta" DiffusionConstant="0.1" DecayConstant="0.0">
+            <InitialCondition Type="Medium">0.0</InitialCondition>
+        </DiffusionField>
+        <DiffusionField Name="Oxygen" DiffusionConstant="0" DecayConstant="0.0">
+            <InitialCondition Type="Medium">1.0</InitialCondition>
+        </DiffusionField>
+        <DiffusionField Name="Nutrient" DiffusionConstant="0" DecayConstant="0.0">
+            <InitialCondition Type="Medium">1.0</InitialCondition>
+        </DiffusionField>
+        <DiffusionField Name="VEGF" DiffusionConstant="0.0" DecayConstant="0.0">
+            <InitialCondition Type="Medium">0.0</InitialCondition>
+        </DiffusionField>
+
+    </Steppable>
+
+    <Plugin Name="FocalPointPlasticity">
+
+    </Plugin>
+
+
+
+
+
+    <Plugin Name="Secretion">
+        <!-- Tumor cells secrete IL-8 and IL-6 -->
+        <!-- <Field Name="IL8"> -->
+            <!-- <Secretion Type="EpithelioidTumor">0.01</Secretion> -->
+            <!-- <Secretion Type="SarcomatoidTumor">0.02</Secretion> -->
+        <!-- </Field> -->
+        <!-- <Field Name="IL6"> -->
+            <!-- <Secretion Type="EpithelioidTumor">0.005</Secretion> -->
+            <!-- <Secretion Type="SarcomatoidTumor">0.005</Secretion> -->
+        <!-- </Field> -->
+
+        <!-- &lt;!&ndash; M2 Macrophages secrete VEGF, TGF-beta &ndash;&gt;  -->
+        <!-- <Field Name="VEGF"> -->
+            <!-- <Secretion Type="M2Macrophage">0.01</Secretion> -->
+            <!-- <Secretion Type="CAF">0.01</Secretion> -->
+        <!-- </Field> -->
+        <!-- <Field Name="TGFbeta"> -->
+            <!-- <Secretion Type="M2Macrophage">0.01</Secretion> -->
+            <!-- <Secretion Type="CAF">0.01</Secretion> -->
+        <!-- </Field> -->
+
+        <!-- &lt;!&ndash; CAF secretes FGF &ndash;&gt;  -->
+        <!-- <Field Name="FGF"> -->
+            <!-- <Secretion Type="CAF">0.01</Secretion> -->
+        <!-- </Field> -->
+    </Plugin>
+
+    <Plugin Name="ExternalPotential">
+
+       <Algorithm>CenterOfMassBased</Algorithm>
+    </Plugin>
+
+    <Visualization>
+        <!-- Existing visualization settings -->
+        <Plot name="Cell_Types">
+            <PlotData>
+                <TypePlot TypeId="1" Color="Blue"/>
+                <TypePlot TypeId="2" Color="Red"/>
+                <TypePlot TypeId="3" Color="Red"/> <!-- Visceral Pleura -->
+                <TypePlot TypeId="4" Color="Yellow"/> <!-- Parietal Pleura -->
+                <TypePlot TypeId="5" Color="Brown"/> <!-- M2Macrophage -->
+                <TypePlot TypeId="6" Color="Purple"/> <!-- CAF -->
+                <TypePlot TypeId="7" Color="Cyan"/> <!-- Fibroblast -->
+                <TypePlot TypeId="8" Color="White"/> <!-- Fibroblast -->
+
+            </PlotData>
+        </Plot>
+        <ScalarField Name="SpaceBetweenPleuras">
+                <Display MinRange="0.0" MaxRange="1.0" ColorMap="Jet"/>
+        </ScalarField>
+        <ScalarField Name="Oxygen_Absolute">
+            <Display MinRange="0.0" MaxRange="1.0" ColorMap="Jet"/>
+        </ScalarField>
+        <ScalarField Name="Nutrient_Absolute">
+            <Display MinRange="0.0" MaxRange="1.0" ColorMap="Jet"/>
+        </ScalarField>
+        <ScalarField Name="Oxygen_Scaled">
+            <Display MinRange="0.0" MaxRange="1.0" ColorMap="Jet"/>
+        </ScalarField>
+        <ScalarField Name="Nutrient_Scaled">
+            <Display MinRange="0.0" MaxRange="1.0" ColorMap="Jet"/>
+        </ScalarField>
+        <ScalarField Name="VEGF">
+            <Display MinRange="0.0" MaxRange="1.0" ColorMap="Jet"/>
+        </ScalarField>
+    </Visualization>
+
+    <Plugin Name="ConnectivityGlobal">
+        <Penalty Type="VisceralPleura">1000000</Penalty>
+        <Penalty Type="ParietalPleura">1000000</Penalty>
+        <Penalty Type="EpithelioidTumor">1000000</Penalty>
+    </Plugin>
+
+    <Plugin Name="LengthConstraint">
+
+   <!-- <LengthEnergyParameters CellType="VisceralPleura" LambdaLength="40.0" MinorTargetLength="0.5" TargetLength="2"/>-->
+   <!-- <LengthEnergyParameters CellType="ParietalPleura" LambdaLength="40.0" MinorTargetLength="1" TargetLength="1"/>-->
+    </Plugin>
+
+
+</CompuCell3D>
